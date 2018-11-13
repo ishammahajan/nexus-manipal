@@ -1,0 +1,71 @@
+{
+  "project_info": {
+    "project_number": "165745477684",
+    "firebase_url": "https://ttcomplete-c6477.firebaseio.com",
+    "project_id": "ttcomplete-c6477",
+    "storage_bucket": "ttcomplete-c6477.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:165745477684:android:c949fbc052ebd91c",
+        "android_client_info": {
+          "package_name": "com.thewhirringmechanic.chillbruh"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "165745477684-n5v6s37b24epoih7ug0m3phsn2jgesr8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.thewhirringmechanic.chillbruh",
+            "certificate_hash": "0a63b06a591acaa0c964e9ad3ef849b9c4f59bde"
+          }
+        },
+        {
+          "client_id": "165745477684-9kdoc6bii90luren8jc87eehqtnl1k5c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.thewhirringmechanic.chillbruh",
+            "certificate_hash": "145820a9e4f9375dd99d2f253ce8abe75781451a"
+          }
+        },
+        {
+          "client_id": "165745477684-9mr5ssm1vuk371ncmnupb50d7ldba6th.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.thewhirringmechanic.chillbruh",
+            "certificate_hash": "fbe5e1d0bc35be84fdd77951d9e529837565aae1"
+          }
+        },
+        {
+          "client_id": "165745477684-61ssuob9t430pg3f9m5lj9uf82spmmju.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYqYyEGU8Iq3LrWNoAfdfi4fGehEt76IA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "165745477684-61ssuob9t430pg3f9m5lj9uf82spmmju.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
