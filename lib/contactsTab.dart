@@ -5,8 +5,8 @@ import 'package:zoomable_image/zoomable_image.dart';
 class ContactsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [SliverList(
+    return CustomScrollView(slivers: [
+      SliverList(
           delegate: SliverChildListDelegate([
         ExpansionTile(
           title: Text("Auto Service"),
@@ -793,7 +793,7 @@ class ContactsTab extends StatelessWidget {
             ),
           ],
         )
-      ])),]
-    );
+      ])),
+    ]);
   }
 }

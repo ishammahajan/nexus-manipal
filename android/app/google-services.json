@@ -39,6 +39,14 @@
           }
         },
         {
+          "client_id": "165745477684-6p0l7qv6gad6jbl3rnlfasl0o3go5k2f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.thewhirringmechanic.chillbruh",
+            "certificate_hash": "503f4eaac5d79af2409ce5057a4fb798c2bd9de1"
+          }
+        },
+        {
           "client_id": "165745477684-61ssuob9t430pg3f9m5lj9uf82spmmju.apps.googleusercontent.com",
           "client_type": 3
         }
