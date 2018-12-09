@@ -2,34 +2,29 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:chill_bruh/buySellPage.dart';
-import 'package:chill_bruh/confessionsPage.dart';
-import 'package:chill_bruh/studentClubs.dart';
-import 'package:chill_bruh/aboutPage.dart';
-import 'package:chill_bruh/chatPage.dart';
-import 'package:chill_bruh/contactsTab.dart';
-import 'package:chill_bruh/taxiSharing.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chill_bruh/helperFunctions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:intl/intl.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:zoomable_image/zoomable_image.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:onesignal/onesignal.dart';
-import 'package:share/share.dart';
+import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:dynamic_theme/dynamic_theme.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import 'package:onesignal/onesignal.dart';
+import 'package:share/share.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:zoomable_image/zoomable_image.dart';
+
+import 'chatPage.dart';
+import 'contactsTab.dart';
+import 'mainDrawer.dart';
 
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
@@ -108,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     var initializationSettingsAndroid = new AndroidInitializationSettings('ic_launcher');
     var initializationSettingsIOS = new IOSInitializationSettings();
     var initializationSettings = new InitializationSettings(initializationSettingsAndroid, initializationSettingsIOS);
-    flutterLocalNotificationsPlugin.initialize(initializationSettings, selectNotification: (str) {});
+    flutterLocalNotificationsPlugin.initialize(initializationSettings, onSelectNotification: (str) {});
   }
 
   bool _firstLoad = true;
@@ -124,10 +119,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         });
       });
       OneSignal.shared.setNotificationOpenedHandler((OSNotificationOpenedResult result) async {
-        DocumentSnapshot ownerDoc = await Firestore.instance
-            .collection("Users")
-            .document(result.notification.payload.additionalData['chatWith'])
-            .get();
+        DocumentSnapshot ownerDoc =
+            await Firestore.instance.collection("Users").document(result.notification.payload.additionalData['chatWith']).get();
         print(ownerDoc.data);
         Navigator.push(context, MaterialPageRoute(builder: (_) {
           return ChatPage(
@@ -135,12 +128,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           );
         }));
         this.setState(() {
-          _debugLabelString =
-              "Opened notification: \n${result.notification.jsonRepresentation().replaceAll("\\n", "\n")}";
+          _debugLabelString = "Opened notification: \n${result.notification.jsonRepresentation().replaceAll("\\n", "\n")}";
         });
       });
-      await OneSignal.shared.init("e1dcbe9d-7329-41e3-9ff3-2c53720d9671",
-          iOSSettings: {OSiOSSettings.autoPrompt: false, OSiOSSettings.inAppLaunchUrl: true});
+      await OneSignal.shared
+          .init("e1dcbe9d-7329-41e3-9ff3-2c53720d9671", iOSSettings: {OSiOSSettings.autoPrompt: false, OSiOSSettings.inAppLaunchUrl: true});
       OneSignal.shared.setInFocusDisplayType(OSNotificationDisplayType.notification);
       String str;
       set = await OneSignal.shared.getPermissionSubscriptionState().then((sub) {
@@ -325,12 +317,9 @@ class _AddNewsPageState extends State<AddNewsPage> {
             String rand = "${new Random().nextInt(10000)}";
             var photo = FirebaseStorage.instance.ref().child("News/").child(rand + ".png").putFile(image);
             photo.onComplete.then((doc) async {
-              await Firestore.instance.collection("News").add({
-                "Timestamp": DateTime.now(),
-                "PhotoUrl": doc.ref.getDownloadURL().toString(),
-                "Title": title,
-                "Content": content
-              });
+              await Firestore.instance
+                  .collection("News")
+                  .add({"Timestamp": DateTime.now(), "PhotoUrl": doc.ref.getDownloadURL().toString(), "Title": title, "Content": content});
             });
           }),
     );
@@ -434,9 +423,7 @@ class _ExpandedNewsPageState extends State<ExpandedNewsPage> with TickerProvider
                   child: Row(
                     children: <Widget>[
                       Text(
-                        news['Timestamp'] is String
-                            ? news['Timestamp']
-                            : DateFormat.MMMMEEEEd().format(news['Timestamp']),
+                        news['Timestamp'] is String ? news['Timestamp'] : DateFormat.MMMMEEEEd().format(news['Timestamp']),
                         style: TextStyle(color: Colors.grey),
                       ),
                     ],
@@ -498,11 +485,7 @@ class _ExpandedNewsPageState extends State<ExpandedNewsPage> with TickerProvider
                         onSubmitted: (str) async {
                           _editControl.clear();
                           FirebaseUser owner = await FirebaseAuth.instance.currentUser();
-                          await Firestore.instance
-                              .collection("News")
-                              .document(news.documentID)
-                              .collection("Comments")
-                              .add({
+                          await Firestore.instance.collection("News").document(news.documentID).collection("Comments").add({
                             "Content": str,
                             "OwnerName": owner.displayName,
                             "OwnerUid": owner.uid,
@@ -518,11 +501,7 @@ class _ExpandedNewsPageState extends State<ExpandedNewsPage> with TickerProvider
                             String str = _editControl.text;
                             _editControl.clear();
                             FirebaseUser owner = await FirebaseAuth.instance.currentUser();
-                            await Firestore.instance
-                                .collection("News")
-                                .document(news.documentID)
-                                .collection("Comments")
-                                .add({
+                            await Firestore.instance.collection("News").document(news.documentID).collection("Comments").add({
                               "Content": str,
                               "OwnerName": owner.displayName,
                               "OwnerUid": owner.uid,
@@ -585,23 +564,19 @@ class _AddStuffFABState extends State<AddStuffFAB> {
                                 lastDate: DateTime.now().add(Duration(days: 500)),
                               );
                               TimeOfDay time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
-                              DateTime toInput =
-                                  DateTime(dateTime.year, dateTime.month, dateTime.day, time.hour, time.minute);
+                              DateTime toInput = DateTime(dateTime.year, dateTime.month, dateTime.day, time.hour, time.minute);
                               var titleVenueOfferWhatsapplink = str.split("+");
                               String rand = "${new Random().nextInt(10000)}";
-                              var photo =
-                                  FirebaseStorage.instance.ref().child("News/").child(rand + ".png").putFile(image);
+                              var photo = FirebaseStorage.instance.ref().child("News/").child(rand + ".png").putFile(image);
                               photo.onComplete.then((doc) async {
-                                await Firestore.instance
-                                    .collection("Events")
-                                    .document(titleVenueOfferWhatsapplink[0])
-                                    .setData({
+                                await Firestore.instance.collection("Events").document(titleVenueOfferWhatsapplink[0]).setData({
                                   "Venue": titleVenueOfferWhatsapplink[1],
                                   "Time": toInput,
                                   "Timestamp": DateTime.now(),
                                   "Title": titleVenueOfferWhatsapplink[0],
                                   "Offer": titleVenueOfferWhatsapplink[2],
                                   "WhatsappLink": titleVenueOfferWhatsapplink[3],
+                                  "mBeans": "-",
                                   "PhotoUrl": doc.ref.getDownloadURL().toString()
                                 });
                               });
@@ -621,564 +596,6 @@ class _AddStuffFABState extends State<AddStuffFAB> {
                 });
           } else
             return Container();
-        });
-  }
-}
-
-class MainDrawer extends StatefulWidget {
-  bool loggedIn;
-  String set;
-
-  MainDrawer({@required loggedIn, @required set});
-
-  @override
-  _MainDrawerState createState() => _MainDrawerState(loggedIn: loggedIn, set: set);
-}
-
-class _MainDrawerState extends State<MainDrawer> {
-  bool _loadingProfile = false;
-  bool loggedIn;
-  String set;
-
-  _MainDrawerState({@required loggedIn, @required set});
-
-  TextEditingController _multiEditControl;
-  String _driveLink = "https://drive.google.com/drive/mobile/folders/1q4w8rBy-V7RZYdbrP0mckTxa9bLNDpum";
-
-  Future<DocumentSnapshot> _getOwner() async {
-    FirebaseUser user = await FirebaseAuth.instance.currentUser();
-    return await Firestore.instance.collection("Users").document(user.uid).get();
-  }
-
-  _initSignIn() async {
-    setState(() {
-      _loadingProfile = true;
-    });
-    GoogleSignIn _googleSignIn = new GoogleSignIn.standard();
-    GoogleSignInAccount googleUser = await _googleSignIn.signIn();
-    GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-    FirebaseUser user =
-        await FirebaseAuth.instance.signInWithGoogle(idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
-    DocumentSnapshot check = await Firestore.instance.collection("Users").document(user.uid).get();
-    if (!check.exists) {
-      await Firestore.instance.collection("Users").document(user.uid).setData({
-        "Uid": user.uid,
-        "PhotoUrl": user.photoUrl,
-        "DisplayName": user.displayName,
-        "Email": user.email,
-        "NotificationId": set
-      }).then((x) async {});
-      setState(() {
-        _loadingProfile = false;
-      });
-    }
-    setState(() {
-      _loadingProfile = false;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _multiEditControl = new TextEditingController();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<FirebaseUser>(
-        future: FirebaseAuth.instance.currentUser(),
-        builder: (_, snapshot) {
-          return Drawer(
-            child: Column(
-              children: <Widget>[
-                snapshot.data != null
-                    ? InkWell(
-                        child: UserAccountsDrawerHeader(
-                          decoration: BoxDecoration(
-                              border:
-                                  Border(bottom: BorderSide(color: Theme.of(context).primaryTextTheme.body1.color))),
-                          accountName: FutureBuilder<DocumentSnapshot>(
-                              future: _getOwner(),
-                              builder: (_, snapshot) {
-                                if (!snapshot.hasData) {
-                                  return _loadingProfile
-                                      ? Center(child: CircularProgressIndicator())
-                                      : Text(
-                                          "Tap to Login",
-                                        );
-                                }
-                                return Text(snapshot.data['DisplayName']);
-                              }),
-                          currentAccountPicture: FutureBuilder<FirebaseUser>(
-                              future: FirebaseAuth.instance.currentUser(),
-                              builder: (_, snapshot) {
-                                if (!snapshot.hasData) {
-                                  return _loadingProfile
-                                      ? Center(child: CircularProgressIndicator())
-                                      : Icon(
-                                          Icons.person,
-                                        );
-                                }
-                                return CircleAvatar(
-                                  backgroundImage: NetworkImage(snapshot.data.photoUrl),
-                                );
-                              }),
-                          accountEmail: FutureBuilder<FirebaseUser>(
-                              future: FirebaseAuth.instance.currentUser(),
-                              builder: (_, snapshot) {
-                                if (!snapshot.hasData) {
-                                  return _loadingProfile ? Container() : Container();
-                                }
-                                return Text(snapshot.data.email);
-                              }),
-                          onDetailsPressed: () async {
-                            FirebaseUser owner = await FirebaseAuth.instance.currentUser();
-                            showDialog(
-                                context: context,
-                                child: SimpleDialog(
-                                  children: <Widget>[
-                                    ListTile(
-                                      title: Text("Edit Profile"),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        showDialog(
-                                            context: context,
-                                            builder: (_) {
-                                              return SimpleDialog(
-                                                children: <Widget>[
-                                                  ListTile(
-                                                    title: Text("Display Name"),
-                                                    onTap: () {
-                                                      Navigator.pop(context);
-                                                      showDialog(
-                                                          context: context,
-                                                          builder: (_) {
-                                                            return SimpleDialog(
-                                                              children: <Widget>[
-                                                                ListTile(
-                                                                  title: Text("Set new name:"),
-                                                                ),
-                                                                ListTile(
-                                                                  title: TextField(
-                                                                    controller: _multiEditControl,
-                                                                  ),
-                                                                ),
-                                                                Row(
-                                                                  children: <Widget>[
-                                                                    Expanded(
-                                                                      child: Container(),
-                                                                    ),
-                                                                    FlatButton(
-                                                                        onPressed: () async {
-                                                                          await Firestore.instance
-                                                                              .collection("Users")
-                                                                              .document(owner.uid)
-                                                                              .updateData({
-                                                                            "DisplayName": _multiEditControl.text
-                                                                          });
-                                                                          Navigator.pop(context);
-                                                                          setState(() {});
-                                                                        },
-                                                                        child: Text("Submit")),
-                                                                  ],
-                                                                )
-                                                              ],
-                                                            );
-                                                          });
-                                                    },
-                                                  ),
-                                                ],
-                                              );
-                                            });
-                                      },
-                                    ),
-                                    ListTile(
-                                      title: Text("Logout"),
-                                      onTap: () {
-                                        FirebaseAuth.instance.signOut();
-                                        Navigator.pop(context);
-                                        loggedIn = false;
-                                        setState(() {});
-                                      },
-                                    ),
-                                  ],
-                                ));
-                          },
-                        ),
-                      )
-                    : InkWell(
-                        child: Column(
-                          children: <Widget>[
-                            FutureBuilder<DocumentSnapshot>(
-                                future: _getOwner(),
-                                builder: (_, snapshot) {
-                                  if (!snapshot.hasData) {
-                                    return UserAccountsDrawerHeader(
-                                      accountName: Text("Tap to Login"),
-                                      accountEmail: Text("With Google"),
-                                      otherAccountsPictures: <Widget>[
-                                        Icon(
-                                          Icons.person,
-                                        )
-                                      ],
-                                      onDetailsPressed: () {
-                                        _initSignIn();
-                                      },
-                                    );
-                                  }
-                                  return ListTile(
-                                    title: Text(snapshot.data['DisplayName']),
-                                    leading: CircleAvatar(
-                                      backgroundImage: NetworkImage(snapshot.data['PhotoUrl']),
-                                    ),
-                                    trailing: new PopupMenuButton(onSelected: (str) {
-                                      switch (str) {
-                                        case "edit":
-                                          showDialog(
-                                              context: context,
-                                              builder: (_) {
-                                                return SimpleDialog(
-                                                  children: <Widget>[
-                                                    ListTile(
-                                                      title: Text("Display Name"),
-                                                      onTap: () {
-                                                        Navigator.pop(context);
-                                                        showDialog(
-                                                            context: context,
-                                                            builder: (_) {
-                                                              return SimpleDialog(
-                                                                children: <Widget>[
-                                                                  ListTile(
-                                                                    title: Text("Set new name:"),
-                                                                  ),
-                                                                  ListTile(
-                                                                    title: TextField(
-                                                                      controller: _multiEditControl,
-                                                                    ),
-                                                                  ),
-                                                                  Row(
-                                                                    children: <Widget>[
-                                                                      Expanded(
-                                                                        child: Container(),
-                                                                      ),
-                                                                      FlatButton(
-                                                                          onPressed: () async {
-                                                                            await Firestore.instance
-                                                                                .collection("Users")
-                                                                                .document(snapshot.data['Uid'])
-                                                                                .updateData({
-                                                                              "DisplayName": _multiEditControl.text
-                                                                            });
-                                                                            Navigator.pop(context);
-                                                                            setState(() {});
-                                                                          },
-                                                                          child: Text("Submit")),
-                                                                    ],
-                                                                  )
-                                                                ],
-                                                              );
-                                                            });
-                                                      },
-                                                    ),
-                                                  ],
-                                                );
-                                              });
-                                          break;
-                                        case "logout":
-                                          FirebaseAuth.instance.signOut();
-                                          Navigator.pop(context);
-                                          loggedIn = false;
-                                          setState(() {});
-                                      }
-                                    }, itemBuilder: (_) {
-                                      return <PopupMenuEntry>[
-                                        const PopupMenuItem(value: "edit", child: Text("Edit Profile")),
-                                        const PopupMenuItem(value: "logout", child: Text("Logout"))
-                                      ];
-                                    }),
-                                  );
-                                }),
-                          ],
-                        ),
-                      ),
-                Expanded(
-                  child: ListView(children: [
-                    ListTile(
-                      leading: Icon(Icons.event),
-                      title: Text("Academic Calendar"),
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) {
-                          return AcadCal();
-                        }));
-                      },
-                    ),
-                    ListTile(
-                      leading: Icon(FontAwesomeIcons.book),
-                      title: Text("Notes"),
-                    ),
-                    StreamBuilder<QuerySnapshot>(
-                        stream: Firestore.instance.collection("Notes").snapshots(),
-                        builder: (_, snapshot) {
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              snapshot.hasData
-                                  ? DropdownButton<String>(
-                                      hint: Text("Select"),
-                                      value: _driveLink,
-                                      items: snapshot.data.documents.map((doc) {
-                                        return DropdownMenuItem<String>(
-                                            value: doc['Link'],
-                                            child: Container(
-                                              width: 100.0,
-                                              child: Text(doc['Title']),
-                                            ));
-                                      }).toList(),
-                                      onChanged: (str) {
-                                        _driveLink = str;
-                                        setState(() {});
-                                      })
-                                  : Container(),
-                              IconButton(
-                                  icon: Icon(Icons.send),
-                                  onPressed: () {
-                                    launch(_driveLink);
-                                  })
-                            ],
-                          );
-                        }),
-                    ListTile(
-                      leading: Icon(FontAwesomeIcons.graduationCap),
-                      title: Text("Student Clubs"),
-                      onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(builder: (_) {
-                          return StudentClubs();
-                        }));
-                      },
-                    ),
-                    ListTile(
-                      title: Text("Buy/Sell Stuff"),
-                      leading: Icon(FontAwesomeIcons.shoppingBag),
-                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) {
-                            return BuySellPage();
-                          })),
-                    ),
-                    ListTile(
-                      leading: Icon(FontAwesomeIcons.userSecret),
-                      title: Text("Confessions"),
-                      onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(builder: (_) {
-                          return ConfessionsPage();
-                        }));
-                      },
-                    ),
-                    ListTile(
-                      leading: Icon(FontAwesomeIcons.umbrellaBeach),
-                      title: Text("Places to visit"),
-                      onTap: () {
-                        launch("https://themitpost.com/manipal-traveller/");
-                      },
-                    ),
-                    ListTile(
-                      leading: Icon(FontAwesomeIcons.taxi),
-                      title: Text("Taxi Sharing"),
-                      onTap: () async {
-                        FirebaseUser user = await FirebaseAuth.instance.currentUser();
-                        if (user == null) {
-                          showDialog(
-                              context: context,
-                              builder: (_) {
-                                return AlertDialog(
-                                  title: Text("You must login to use this feature"),
-                                  actions: <Widget>[
-                                    FlatButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: Text("Okay"))
-                                  ],
-                                );
-                              });
-                        } else {
-                          DocumentSnapshot owner =
-                              await Firestore.instance.collection("Users").document(user.uid).get();
-                          Navigator.push(context, MaterialPageRoute(builder: (_) {
-                            return TaxiSharingPage(
-                              owner: owner,
-                            );
-                          }));
-                        }
-                      },
-                    ),
-                    ListTile(
-                      leading: Icon(
-                        FontAwesomeIcons.share,
-                      ),
-                      title: Text(
-                        "Share this app!",
-                        style: TextStyle(),
-                      ),
-                      onTap: () {
-                        Share.share(
-                            "We created an app to unify the culture of Manipal!\nIt's called Nexus, and it's on the playstore now, "
-                            "check it out!\nhttps://play.google.com/store/apps/details?id=com.thewhirringmechanic.chillbruh");
-                      },
-                    ),
-                    ListTile(
-                      leading: Icon(
-                        FontAwesomeIcons.smile,
-                      ),
-                      title: Text(
-                        "About us",
-                        style: TextStyle(),
-                      ),
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) {
-                          return AboutPage();
-                        }));
-                      },
-                    ),
-                    SwitchListTile(
-                        title: Text("Dark Theme"),
-                        secondary: Icon(FontAwesomeIcons.ghost),
-                        value: Theme.of(context).brightness == Brightness.dark ? true : false,
-                        onChanged: (isDark) {
-                          DynamicTheme.of(context).setBrightness(isDark ? Brightness.dark : Brightness.light);
-                          setState(() {});
-                        }),
-                    ListTile(
-                      isThreeLine: true,
-                      leading: Icon(
-                        FontAwesomeIcons.bug,
-                      ),
-                      title: Text(
-                        "Bugs and Feedback",
-                        style: TextStyle(),
-                      ),
-                      subtitle: Text(
-                        "Will work only if logged in\n(Or suggest new features! ;D)",
-                        style: TextStyle(),
-                      ),
-                      onTap: () {
-                        showDialog(
-                            context: context,
-                            builder: (_) {
-                              return SimpleDialog(
-                                children: <Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 24.0),
-                                    child: Center(
-                                        child: Text(
-                                      "Your say matters a lot to us!",
-                                      textScaleFactor: 1.3,
-                                    )),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 16.0, right: 16.0),
-                                    child: TextField(controller: _multiEditControl, maxLines: null),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 16.0),
-                                    child: FlatButton(
-                                        onPressed: () async {
-                                          FirebaseUser owner = await FirebaseAuth.instance.currentUser();
-                                          await Firestore.instance.collection("Feedback").add({
-                                            "Owner": owner.uid,
-                                            "OwnerName": owner.displayName,
-                                            "Problem": _multiEditControl.text
-                                          });
-                                          Navigator.pop(context);
-                                        },
-                                        child: Text("Submit")),
-                                  )
-                                ],
-                              );
-                            });
-                      },
-                    ),
-                    ListTile(
-                      leading: Icon(
-                        Icons.info,
-                      ),
-                      title: Text(
-                        "Terms of Service",
-                        style: TextStyle(),
-                      ),
-                      onTap: () {
-                        showDialog(
-                            context: context,
-                            builder: (_) {
-                              return Dialog(
-                                child: Container(
-                                  height: 400.0,
-                                  child: ListView(
-                                    children: <Widget>[
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        children: <Widget>[
-                                          Padding(
-                                            padding: const EdgeInsets.all(24.0),
-                                            child: Text(
-                                              "Terms of Service",
-                                              textScaleFactor: 1.5,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Container(
-                                        height: 300.0,
-                                        decoration: BoxDecoration(
-                                            border: Border.all(color: Theme.of(context).primaryTextTheme.body1.color)),
-                                        margin: EdgeInsets.only(left: 8.0, right: 8.0),
-                                        child: ListView(
-                                          children: <Widget>[
-                                            Padding(
-                                              padding: const EdgeInsets.all(16.0),
-                                              child: Text(
-                                                "By accessing and using this service, you accept and agree to be bound by the terms and provision of this agreement."
-                                                    " In addition, when using these particular services, you shall be subject to any posted guidelines or rules applicable to such services. Any participation in this service will constitute acceptance of this agreement. If you do not agree to abide by the above, please do not use this service.",
-                                                style: TextStyle(fontWeight: FontWeight.bold),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(16.0),
-                                              child: Text(
-                                                  "This mobile application and its components are offered for informational purposes only; this mobile application "
-                                                  "shall not be responsible or liable for the accuracy, usefulness or availability of any information transmitted or made available via the mobile application, and shall not be responsible or liable for any error or omissions in that information."),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(16.0),
-                                              child: Text(
-                                                  "This mobile application advertises and uses paid promotion of events for monetary gain. We take good measures to "
-                                                  "ensure accuracy of information displayed on the application. We take our reputation and credibility in this regard very seriously and endorse products we truly believe in. Given this, we act only as advertisers and assume no responsibility for the event or product or whatsoever thereof we advertise."),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(16.0),
-                                              child: Text(
-                                                  "We may terminate your access to the application, without cause or notice, which may result in the forfeiture and "
-                                                  "destruction of all information associated with your account. All provisions of this Agreement that, by their nature, should survive termination shall survive termination, including, without limitation, ownership provisions, warranty disclaimers, indemnity, and limitations of liability."),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(16.0),
-                                              child: Text(
-                                                  "The company reserves the right to change these conditions from time to time as it sees fit and your continued use "
-                                                  "of the application will signify your acceptance of any adjustment to these terms. If there are any changes to our privacy policy, we will announce that these changes have been made on the homepage in the application. If there are any changes in how we use our application customers' Personally Identifiable Information, notification by email or postal mail will be made to those affected by the change. Any changes to our privacy policy will be posted on our application 30 days prior to these changes taking place. You are therefore advised to re-read this statement on a regular basis."),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            });
-                      },
-                    ),
-                  ]),
-                ),
-              ],
-            ),
-          );
         });
   }
 }
@@ -1452,22 +869,40 @@ class _EventsTabState extends State<EventsTab> {
   DateTime timeDateTime;
   String Whatsapp = "-";
   String offer = "-";
+  String mBeans = "-";
+  List<dynamic> registered = [];
+
+  SetNotification() async {
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails('id', 'Nexus', 'Channel for showing scheduled notifs',
+        importance: Importance.Max, priority: Priority.High);
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+    var platformChannelSpecifics = new NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin
+        .schedule(0, 'Reminder for Event!', title + " is scheduled to begin after 30 minutes at " + venue + '!',
+            timeDateTime.subtract(Duration(minutes: 30)), platformChannelSpecifics,
+            payload: ' ')
+        .then((x) async {
+      Scaffold.of(context).showSnackBar(SnackBar(
+          content: Text("Scheduled reminder, you will be reminded of "
+              "this event twice, once an hour before it's scheduled to occur, once a half hour before.")));
+    });
+    await flutterLocalNotificationsPlugin.schedule(1, 'Reminder for Event!', title + " is scheduled to begin in one hour at " + venue + '!',
+        timeDateTime.subtract(Duration(hours: 1)), platformChannelSpecifics,
+        payload: ' ');
+  }
 
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
       slivers: <Widget>[
+        // List to show all events pictures and enable clicking
         SliverList(
           delegate: SliverChildListDelegate([
             Divider(
               color: Theme.of(context).primaryTextTheme.body1.color,
             ),
             StreamBuilder<QuerySnapshot>(
-              stream: Firestore.instance
-                  .collection("Events")
-                  .orderBy("Time")
-                  .where("Time", isGreaterThan: DateTime.now())
-                  .snapshots(),
+              stream: Firestore.instance.collection("Events").orderBy("Time").where("Time", isGreaterThan: DateTime.now()).snapshots(),
               builder: (_, snapshot) {
                 if (!snapshot.hasData) {
                   return Container(
@@ -1508,111 +943,14 @@ class _EventsTabState extends State<EventsTab> {
                         onTap: () {
                           setState(() {
                             title = doc['Title'];
-                            time =
-                                DateFormat.yMMMEd().format(doc['Time']) + ", at " + DateFormat.jm().format(doc['Time']);
+                            time = DateFormat.yMMMEd().format(doc['Time']) + ", at " + DateFormat.jm().format(doc['Time']);
                             timeDateTime = doc['Time'];
                             venue = doc['Venue'];
                             offer = doc['Offer'];
                             Whatsapp = doc['WhatsappLink'];
+                            mBeans = doc['mBeans'];
+                            registered = doc['Registered'];
                           });
-/*                          showModalBottomSheet(
-                              context: context,
-                              builder: (_) {
-                                return ListView(children: <Widget>[
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 24.0, left: 16.0),
-                                        child: Text(
-                                          "Event",
-                                          textScaleFactor: 1.7,
-                                        ),
-                                      ),
-                                      Divider(
-                                        indent: 16.0,
-                                        color: Theme.of(context).primaryTextTheme.body1.color,
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 16.0),
-                                        child: Text(
-                                          doc['Title'],
-                                          textScaleFactor: 1.5,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 24.0, left: 16.0),
-                                        child: Text(
-                                          "Time",
-                                          textScaleFactor: 1.7,
-                                        ),
-                                      ),
-                                      Divider(
-                                        indent: 16.0,
-                                        color: Theme.of(context).primaryTextTheme.body1.color,
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 16.0),
-                                        child: Text(
-                                          DateFormat.yMMMEd().format(doc['Time']) + ", at " + DateFormat.Hm().format(doc['Time']),
-                                          textScaleFactor: 1.5,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 24.0, left: 16.0),
-                                        child: Text(
-                                          "Venue",
-                                          textScaleFactor: 1.7,
-                                        ),
-                                      ),
-                                      Divider(
-                                        indent: 16.0,
-                                        color: Theme.of(context).primaryTextTheme.body1.color,
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 16.0),
-                                        child: Text(
-                                          doc['Venue'],
-                                          textScaleFactor: 1.5,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 24.0, left: 16.0),
-                                        child: Text(
-                                          "Offer",
-                                          textScaleFactor: 1.7,
-                                        ),
-                                      ),
-                                      Divider(
-                                        indent: 16.0,
-                                        color: Theme.of(context).primaryTextTheme.body1.color,
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 16.0),
-                                        child: Text(
-                                          doc['Offer'],
-                                          textScaleFactor: 1.5,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Row(
-                                          children: <Widget>[
-                                            Expanded(child: Container()),
-                                            IconButton(
-                                              icon: Icon(FontAwesomeIcons.whatsapp),
-                                              iconSize: 48.0,
-                                              onPressed: () {
-                                                launch(doc['WhatsappLink']);
-                                              },
-                                            ),
-                                          ],
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ]);
-                              });*/
                         },
                         child: Stack(
                           children: [
@@ -1649,6 +987,8 @@ class _EventsTabState extends State<EventsTab> {
             Divider(color: Theme.of(context).primaryTextTheme.body1.color, height: 8.0),
           ]),
         ),
+
+        // ListView for details
         SliverFillRemaining(
           child: ListView(children: <Widget>[
             Column(
@@ -1656,49 +996,63 @@ class _EventsTabState extends State<EventsTab> {
               children: <Widget>[
                 Row(
                   children: <Widget>[
+                    // Title: "Event"
                     Padding(
                       padding: const EdgeInsets.only(left: 16.0),
                       child: Text(
-                        "Event Details",
+                        "Event",
                         style: TextStyle(color: Theme.of(context).primaryTextTheme.title.color),
                         textScaleFactor: 1.7,
                       ),
                     ),
                     Expanded(child: Container()),
-                    time == null ||
-                            time == '-' ||
-                            timeDateTime.difference(DateTime.now()).compareTo(Duration(hours: 1)) == -1
+
+                    // For mBeans
+                    mBeans != "-"
+                        ? Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: FlatButton(
+                              onPressed: () {
+                                if (timeDateTime.subtract(Duration(days: 4)).compareTo(DateTime.now()) == -1)
+                                  showAlertDialog(
+                                      context, DialogMode.okay, "The registrations for mBeans close 4 days prior to the event.");
+                                else
+                                  showAlertDialog(context, DialogMode.yesNo, "Would you like to register for the event?",
+                                      subtitle: mBeans + " mBeans will be earned if you attend this event as well.", yesFunction: () async {
+                                    // TODO: Confirm this transaction (beta)
+                                    Firestore.instance.runTransaction((t) async {
+                                      FirebaseUser user = await FirebaseAuth.instance.currentUser();
+                                      if (user == null) showAlertDialog(context, DialogMode.okay, "Please login to use this feature");
+                                      DocumentSnapshot currentDoc = await t.get(Firestore.instance.collection("Events").document(title));
+                                      registered = currentDoc['Registered'];
+                                      if (registered == null) registered = [user.uid + ": " + user.displayName];
+                                      if (!registered.contains(user.uid + ": " + user.displayName))
+                                        registered.add(user.uid + ": " + user.displayName);
+                                      t.update(Firestore.instance.collection("Events").document(title), {"Registered": registered});
+                                      print("HIHI");
+                                    });
+                                  });
+                              },
+                              child: Text(
+                                mBeans + " mB",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              shape: BeveledRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
+                              color: Colors.teal,
+                            ),
+                          )
+                        : Container(),
+
+                    // Function: set remainder
+                    time == null || time == '-' || timeDateTime.difference(DateTime.now()).compareTo(Duration(hours: 1)) == -1
                         ? Container()
                         : IconButton(
                             icon: Icon(FontAwesomeIcons.calendarPlus),
                             onPressed: () async {
-                              var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-                                  'id', 'Nexus', 'Channel for showing scheduled notifs',
-                                  importance: Importance.Max, priority: Priority.High);
-                              var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-                              var platformChannelSpecifics =
-                                  new NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-                              await flutterLocalNotificationsPlugin
-                                  .schedule(
-                                      0,
-                                      'Reminder for Event!',
-                                      title + " is scheduled to begin after 30 minutes at " + venue + '!',
-                                      timeDateTime.subtract(Duration(minutes: 30)),
-                                      platformChannelSpecifics,
-                                      payload: ' ')
-                                  .then((x) async {
-                                Scaffold.of(context).showSnackBar(SnackBar(
-                                    content: Text("Scheduled reminder, you will be reminded of "
-                                        "this event twice, once an hour before it's scheduled to occur, once a half hour before.")));
-                              });
-                              await flutterLocalNotificationsPlugin.schedule(
-                                  1,
-                                  'Reminder for Event!',
-                                  title + " is scheduled to begin in one hour at " + venue + '!',
-                                  timeDateTime.subtract(Duration(hours: 1)),
-                                  platformChannelSpecifics,
-                                  payload: ' ');
+                              SetNotification();
                             }),
+
+                    // Function: WhatsApp link
                     Whatsapp == "Please select an event" || Whatsapp == null || Whatsapp == '-'
                         ? Container()
                         : IconButton(
@@ -1716,7 +1070,7 @@ class _EventsTabState extends State<EventsTab> {
                 Padding(
                   padding: const EdgeInsets.only(left: 16.0),
                   child: Text(
-                    title,
+                    title == "-" ? "Please select an event" : title,
                     textScaleFactor: 1.4,
                   ),
                 ),
