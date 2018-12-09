@@ -1,15 +1,14 @@
 import 'dart:async';
 
-import 'package:chill_bruh/chatPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:onesignal/onesignal.dart';
+import 'package:intl/intl.dart';
+
+import 'chatPage.dart';
 
 class TaxiSharingPage extends StatefulWidget {
-  DocumentSnapshot owner;
+  final DocumentSnapshot owner;
 
   TaxiSharingPage({@required this.owner});
 

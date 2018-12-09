@@ -41,9 +41,11 @@ android {
         targetSdkVersion 27
         multiDexEnabled true
         versionCode 12
-        versionName
+        versionName '1.0.0'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
+        /*ndk {
+            abiFilters 'armeabi-v7a'
+        }*/
     }
 
     signingConfigs {

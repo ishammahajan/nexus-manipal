@@ -42,7 +42,7 @@ packages:
       name: cached_network_image
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.2"
+    version: "0.5.0+1"
   carousel_slider:
     dependency: "direct main"
     description:
@@ -63,7 +63,7 @@ packages:
       name: cloud_firestore
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.7.4"
+    version: "0.8.2+3"
   collection:
     dependency: transitive
     description:
@@ -121,7 +121,7 @@ packages:
       name: firebase_auth
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.5.20"
+    version: "0.6.5"
   firebase_core:
     dependency: "direct main"
     description:
@@ -135,14 +135,14 @@ packages:
       name: firebase_messaging
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.5"
+    version: "2.1.0"
   firebase_ml_vision:
     dependency: "direct main"
     description:
       name: firebase_ml_vision
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.0+1"
+    version: "0.2.0+2"
   firebase_storage:
     dependency: "direct main"
     description:
@@ -161,7 +161,7 @@ packages:
       name: flutter_cache_manager
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.2"
+    version: "0.2.0+1"
   flutter_launcher_icons:
     dependency: "direct dev"
     description:
@@ -175,7 +175,7 @@ packages:
       name: flutter_local_notifications
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.9"
+    version: "0.4.1+1"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -201,7 +201,7 @@ packages:
       name: http
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.11.3+17"
+    version: "0.12.0"
   http_parser:
     dependency: transitive
     description:
@@ -301,7 +301,7 @@ packages:
     source: hosted
     version: "0.5.3"
   shared_preferences:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: shared_preferences
       url: "https://pub.dartlang.org"
@@ -411,5 +411,5 @@ packages:
     source: hosted
     version: "1.2.1+1"
 sdks:
-  dart: ">=2.0.0 <=2.1.0-dev.9.3.flutter-9c07fb64c4"
+  dart: ">=2.0.0 <=2.1.0-dev.9.4.flutter-f9ebf21297"
   flutter: ">=0.5.6 <2.0.0"

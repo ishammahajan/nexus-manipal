@@ -43,7 +43,7 @@ exports.updateNews = functions.https.onRequest((req, res) => {
 
   console.log("Webhook called: " + req.body.post_title + "\n" + img + "\n" + content);
 
-  	if(img != "") {
+  	if(img != "" || img.substring(0,1) != "<" || img.substring(0,5) != content.substring(0,5)) {
 	  	var setNews = db.collection('News').doc(req.body.post_title).set({
 			Title: req.body.post_title,
 			Timestamp: date,
@@ -52,7 +52,7 @@ exports.updateNews = functions.https.onRequest((req, res) => {
 		}).then(ref => {
 			console.log('Set document with ID: ', ref.id);
 			return res.end();
-		});	
+		});
   	}
   	else {
 		var setNews = db.collection('News').doc(req.body.post_title).set({
