@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     //FirebaseAnalytics analytics = new FirebaseAnalytics();
     return DynamicTheme(
-      defaultBrightness: Brightness.light,
+      defaultBrightness: Brightness.dark,
       data: (bright) {
         return bright == Brightness.light
             ? new ThemeData(
@@ -1053,7 +1053,6 @@ class _EventsTabState extends State<EventsTab> {
                                       context, DialogMode.yesNo, "Would you like to register for the event?",
                                       subtitle: mBeans + " mBeans will be earned if you attend this event as well.",
                                       yesFunction: () async {
-                                    // TODO: Confirm this transaction (beta)
                                     Firestore.instance.runTransaction((t) async {
                                       FirebaseUser user = await FirebaseAuth.instance.currentUser();
                                       if (user == null)
@@ -1066,7 +1065,6 @@ class _EventsTabState extends State<EventsTab> {
                                         registered.add(user.uid + ": " + user.displayName);
                                       t.update(Firestore.instance.collection("Events").document(title),
                                           {"Registered": registered});
-                                      print("HIHI");
                                     });
                                   });
                               },
@@ -1096,8 +1094,11 @@ class _EventsTabState extends State<EventsTab> {
                         ? Container()
                         : IconButton(
                             icon: Icon(FontAwesomeIcons.whatsapp, color: Colors.green[700]),
-                            onPressed: () {
-                              launch(Whatsapp);
+                            onPressed: () async {
+                              await canLaunch(Whatsapp)
+                                  ? launch(Whatsapp)
+                                  : showAlertDialog(context, DialogMode.okay,
+                                      "Please install the WhatsApp application to join the group for registration.");
                             },
                           ),
                   ],

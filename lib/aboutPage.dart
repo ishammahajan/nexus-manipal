@@ -115,7 +115,7 @@ class _AboutPageState extends State<AboutPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           IconButton(icon: Icon(FontAwesomeIcons.instagram), onPressed: () {
-                            launch("http://instagram.com/the_whirring_mechanic");
+                            launch("http://instagram.com/_.isham_");
                           }),
                           IconButton(icon: Icon(FontAwesomeIcons.whatsapp), onPressed: () {
                             launch("https:wa.me/918618375066");
