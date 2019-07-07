@@ -357,7 +357,7 @@ class _MainDrawerState extends State<MainDrawer> {
                                 context: context,
                                 builder: (_) {
                                   return AlertDialog(
-                                    title: Text("You must login to post an advert"),
+                                    title: Text("You must login to use this feature"),
                                     actions: <Widget>[
                                       FlatButton(
                                           onPressed: () {

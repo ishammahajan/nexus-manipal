@@ -38,7 +38,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    FirebaseAnalytics analytics = new FirebaseAnalytics();
+    //FirebaseAnalytics analytics = new FirebaseAnalytics();
     return DynamicTheme(
       defaultBrightness: Brightness.light,
       data: (bright) {
@@ -67,9 +67,9 @@ class MyApp extends StatelessWidget {
           title: 'Nexus',
           theme: theme,
           home: new MyHomePage(),
-          navigatorObservers: [
+          /*navigatorObservers: [
             new FirebaseAnalyticsObserver(analytics: analytics),
-          ],
+          ],*/
         );
       },
     );
@@ -119,8 +119,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         });
       });
       OneSignal.shared.setNotificationOpenedHandler((OSNotificationOpenedResult result) async {
-        DocumentSnapshot ownerDoc =
-            await Firestore.instance.collection("Users").document(result.notification.payload.additionalData['chatWith']).get();
+        DocumentSnapshot ownerDoc = await Firestore.instance
+            .collection("Users")
+            .document(result.notification.payload.additionalData['chatWith'])
+            .get();
         print(ownerDoc.data);
         Navigator.push(context, MaterialPageRoute(builder: (_) {
           return ChatPage(
@@ -128,11 +130,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           );
         }));
         this.setState(() {
-          _debugLabelString = "Opened notification: \n${result.notification.jsonRepresentation().replaceAll("\\n", "\n")}";
+          _debugLabelString =
+              "Opened notification: \n${result.notification.jsonRepresentation().replaceAll("\\n", "\n")}";
         });
       });
-      await OneSignal.shared
-          .init("e1dcbe9d-7329-41e3-9ff3-2c53720d9671", iOSSettings: {OSiOSSettings.autoPrompt: false, OSiOSSettings.inAppLaunchUrl: true});
+      await OneSignal.shared.init("e1dcbe9d-7329-41e3-9ff3-2c53720d9671",
+          iOSSettings: {OSiOSSettings.autoPrompt: false, OSiOSSettings.inAppLaunchUrl: true});
       OneSignal.shared.setInFocusDisplayType(OSNotificationDisplayType.notification);
       String str;
       set = await OneSignal.shared.getPermissionSubscriptionState().then((sub) {
@@ -317,9 +320,12 @@ class _AddNewsPageState extends State<AddNewsPage> {
             String rand = "${new Random().nextInt(10000)}";
             var photo = FirebaseStorage.instance.ref().child("News/").child(rand + ".png").putFile(image);
             photo.onComplete.then((doc) async {
-              await Firestore.instance
-                  .collection("News")
-                  .add({"Timestamp": DateTime.now(), "PhotoUrl": doc.ref.getDownloadURL().toString(), "Title": title, "Content": content});
+              await Firestore.instance.collection("News").add({
+                "Timestamp": DateTime.now(),
+                "PhotoUrl": doc.ref.getDownloadURL().toString(),
+                "Title": title,
+                "Content": content
+              });
             });
           }),
     );
@@ -423,7 +429,9 @@ class _ExpandedNewsPageState extends State<ExpandedNewsPage> with TickerProvider
                   child: Row(
                     children: <Widget>[
                       Text(
-                        news['Timestamp'] is String ? news['Timestamp'] : DateFormat.MMMMEEEEd().format(news['Timestamp']),
+                        news['Timestamp'] is String
+                            ? news['Timestamp']
+                            : DateFormat.MMMMEEEEd().format(news['Timestamp']),
                         style: TextStyle(color: Colors.grey),
                       ),
                     ],
@@ -485,7 +493,11 @@ class _ExpandedNewsPageState extends State<ExpandedNewsPage> with TickerProvider
                         onSubmitted: (str) async {
                           _editControl.clear();
                           FirebaseUser owner = await FirebaseAuth.instance.currentUser();
-                          await Firestore.instance.collection("News").document(news.documentID).collection("Comments").add({
+                          await Firestore.instance
+                              .collection("News")
+                              .document(news.documentID)
+                              .collection("Comments")
+                              .add({
                             "Content": str,
                             "OwnerName": owner.displayName,
                             "OwnerUid": owner.uid,
@@ -501,7 +513,11 @@ class _ExpandedNewsPageState extends State<ExpandedNewsPage> with TickerProvider
                             String str = _editControl.text;
                             _editControl.clear();
                             FirebaseUser owner = await FirebaseAuth.instance.currentUser();
-                            await Firestore.instance.collection("News").document(news.documentID).collection("Comments").add({
+                            await Firestore.instance
+                                .collection("News")
+                                .document(news.documentID)
+                                .collection("Comments")
+                                .add({
                               "Content": str,
                               "OwnerName": owner.displayName,
                               "OwnerUid": owner.uid,
@@ -564,12 +580,17 @@ class _AddStuffFABState extends State<AddStuffFAB> {
                                 lastDate: DateTime.now().add(Duration(days: 500)),
                               );
                               TimeOfDay time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
-                              DateTime toInput = DateTime(dateTime.year, dateTime.month, dateTime.day, time.hour, time.minute);
+                              DateTime toInput =
+                                  DateTime(dateTime.year, dateTime.month, dateTime.day, time.hour, time.minute);
                               var titleVenueOfferWhatsapplink = str.split("+");
                               String rand = "${new Random().nextInt(10000)}";
-                              var photo = FirebaseStorage.instance.ref().child("News/").child(rand + ".png").putFile(image);
+                              var photo =
+                                  FirebaseStorage.instance.ref().child("News/").child(rand + ".png").putFile(image);
                               photo.onComplete.then((doc) async {
-                                await Firestore.instance.collection("Events").document(titleVenueOfferWhatsapplink[0]).setData({
+                                await Firestore.instance
+                                    .collection("Events")
+                                    .document(titleVenueOfferWhatsapplink[0])
+                                    .setData({
                                   "Venue": titleVenueOfferWhatsapplink[1],
                                   "Time": toInput,
                                   "Timestamp": DateTime.now(),
@@ -872,11 +893,13 @@ class _EventsTabState extends State<EventsTab> {
   String mBeans = "-";
   List<dynamic> registered = [];
 
-  SetNotification() async {
-    var androidPlatformChannelSpecifics = new AndroidNotificationDetails('id', 'Nexus', 'Channel for showing scheduled notifs',
+  setNotification() async {
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+        'id', 'Nexus', 'Channel for showing scheduled notifs',
         importance: Importance.Max, priority: Priority.High);
     var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-    var platformChannelSpecifics = new NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    var platformChannelSpecifics =
+        new NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin
         .schedule(0, 'Reminder for Event!', title + " is scheduled to begin after 30 minutes at " + venue + '!',
             timeDateTime.subtract(Duration(minutes: 30)), platformChannelSpecifics,
@@ -886,8 +909,12 @@ class _EventsTabState extends State<EventsTab> {
           content: Text("Scheduled reminder, you will be reminded of "
               "this event twice, once an hour before it's scheduled to occur, once a half hour before.")));
     });
-    await flutterLocalNotificationsPlugin.schedule(1, 'Reminder for Event!', title + " is scheduled to begin in one hour at " + venue + '!',
-        timeDateTime.subtract(Duration(hours: 1)), platformChannelSpecifics,
+    await flutterLocalNotificationsPlugin.schedule(
+        1,
+        'Reminder for Event!',
+        title + " is scheduled to begin in one hour at " + venue + '!',
+        timeDateTime.subtract(Duration(hours: 1)),
+        platformChannelSpecifics,
         payload: ' ');
   }
 
@@ -902,7 +929,11 @@ class _EventsTabState extends State<EventsTab> {
               color: Theme.of(context).primaryTextTheme.body1.color,
             ),
             StreamBuilder<QuerySnapshot>(
-              stream: Firestore.instance.collection("Events").orderBy("Time").where("Time", isGreaterThan: DateTime.now()).snapshots(),
+              stream: Firestore.instance
+                  .collection("Events")
+                  .orderBy("Time")
+                  .where("Time", isGreaterThan: DateTime.now())
+                  .snapshots(),
               builder: (_, snapshot) {
                 if (!snapshot.hasData) {
                   return Container(
@@ -943,7 +974,8 @@ class _EventsTabState extends State<EventsTab> {
                         onTap: () {
                           setState(() {
                             title = doc['Title'];
-                            time = DateFormat.yMMMEd().format(doc['Time']) + ", at " + DateFormat.jm().format(doc['Time']);
+                            time =
+                                DateFormat.yMMMEd().format(doc['Time']) + ", at " + DateFormat.jm().format(doc['Time']);
                             timeDateTime = doc['Time'];
                             venue = doc['Venue'];
                             offer = doc['Offer'];
@@ -1014,21 +1046,26 @@ class _EventsTabState extends State<EventsTab> {
                             child: FlatButton(
                               onPressed: () {
                                 if (timeDateTime.subtract(Duration(days: 4)).compareTo(DateTime.now()) == -1)
-                                  showAlertDialog(
-                                      context, DialogMode.okay, "The registrations for mBeans close 4 days prior to the event.");
+                                  showAlertDialog(context, DialogMode.okay,
+                                      "The registrations for mBeans close 4 days prior to the event.");
                                 else
-                                  showAlertDialog(context, DialogMode.yesNo, "Would you like to register for the event?",
-                                      subtitle: mBeans + " mBeans will be earned if you attend this event as well.", yesFunction: () async {
+                                  showAlertDialog(
+                                      context, DialogMode.yesNo, "Would you like to register for the event?",
+                                      subtitle: mBeans + " mBeans will be earned if you attend this event as well.",
+                                      yesFunction: () async {
                                     // TODO: Confirm this transaction (beta)
                                     Firestore.instance.runTransaction((t) async {
                                       FirebaseUser user = await FirebaseAuth.instance.currentUser();
-                                      if (user == null) showAlertDialog(context, DialogMode.okay, "Please login to use this feature");
-                                      DocumentSnapshot currentDoc = await t.get(Firestore.instance.collection("Events").document(title));
+                                      if (user == null)
+                                        showAlertDialog(context, DialogMode.okay, "Please login to use this feature");
+                                      DocumentSnapshot currentDoc =
+                                          await t.get(Firestore.instance.collection("Events").document(title));
                                       registered = currentDoc['Registered'];
                                       if (registered == null) registered = [user.uid + ": " + user.displayName];
                                       if (!registered.contains(user.uid + ": " + user.displayName))
                                         registered.add(user.uid + ": " + user.displayName);
-                                      t.update(Firestore.instance.collection("Events").document(title), {"Registered": registered});
+                                      t.update(Firestore.instance.collection("Events").document(title),
+                                          {"Registered": registered});
                                       print("HIHI");
                                     });
                                   });
@@ -1044,12 +1081,14 @@ class _EventsTabState extends State<EventsTab> {
                         : Container(),
 
                     // Function: set remainder
-                    time == null || time == '-' || timeDateTime.difference(DateTime.now()).compareTo(Duration(hours: 1)) == -1
+                    time == null ||
+                            time == '-' ||
+                            timeDateTime.difference(DateTime.now()).compareTo(Duration(hours: 1)) == -1
                         ? Container()
                         : IconButton(
                             icon: Icon(FontAwesomeIcons.calendarPlus),
                             onPressed: () async {
-                              SetNotification();
+                              setNotification();
                             }),
 
                     // Function: WhatsApp link

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chill_bruh/helperFunctions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
@@ -58,7 +59,6 @@ class _BuySellPageState extends State<BuySellPage> {
                 itemBuilder: (_, index) {
                   if (index == 0) {
                     return FutureBuilder<List<String>>(
-                        initialData: ["hi"],
                         future: getUserAd(),
                         builder: (_, snapshot) {
                           if (snapshot == null || !snapshot.hasData || snapshot.data.isEmpty) return Container();
@@ -453,10 +453,18 @@ Widget ad(BuildContext context, DocumentSnapshot object) {
           subtitle: Text("Rs." + object['Price']),
           trailing: IconButton(
             icon: Icon(object['isPhone'] ? Icons.phone : Icons.email),
-            onPressed: () {
+            onPressed: () async {
               object['isPhone']
-                  ? launch("tel:" + object['PhoneNumber'])
-                  : launch("mailto:" + object['Email'] + "?subject=Nexus Buy Request: " + object['Title']);
+                  ? await canLaunch("tel:" + object['PhoneNumber'])
+                      ? launch("tel:" + object['PhoneNumber'])
+                      : showAlertDialog(context, DialogMode.okay,
+                          "You cannot make a phone call with this phone for some reason. Please remedy that to use this feature.")
+                  : await canLaunch(
+                          Uri.encodeFull("mailto:" + object['Email'] + "?subject=Nexus Buy Request:" + object['Title']))
+                      ? launch(
+                          Uri.encodeFull("mailto:" + object['Email'] + "?subject=Nexus Buy Request:" + object['Title']))
+                      : showAlertDialog(context, DialogMode.okay,
+                          "You don't have an email app installed. Please remedy that to use this feature, thank you.");
             },
           ),
         ),

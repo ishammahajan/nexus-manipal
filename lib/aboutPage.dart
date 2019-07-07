@@ -28,7 +28,7 @@ class _AboutPageState extends State<AboutPage> {
                         height: 70.0,
                       ),
                       Divider(
-                        color: Theme.of(context).primaryTextTheme.body1.color,
+                        color: Theme.of(context).primaryTextTheme.title.color,
                       ),
                     ],
                   ),
@@ -49,7 +49,7 @@ class _AboutPageState extends State<AboutPage> {
                         child: Text(
                           "Aryan Chandwani",
                           textScaleFactor: 2.0,
-                          style: TextStyle(color: Theme.of(context).primaryTextTheme.body1.color),
+                          style: TextStyle(color: Theme.of(context).primaryTextTheme.title.color),
                         ),
                       ),
                       Text(
@@ -83,7 +83,7 @@ class _AboutPageState extends State<AboutPage> {
                         height: 70.0,
                       ),
                       Divider(
-                        color: Theme.of(context).primaryTextTheme.body1.color,
+                        color: Theme.of(context).primaryTextTheme.title.color,
                       ),
                     ],
                   ),
@@ -104,7 +104,7 @@ class _AboutPageState extends State<AboutPage> {
                         child: Text(
                           "Isham Mahajan",
                           textScaleFactor: 2.0,
-                          style: TextStyle(color: Theme.of(context).primaryTextTheme.body1.color),
+                          style: TextStyle(color: Theme.of(context).primaryTextTheme.title.color),
                         ),
                       ),
                       Text(
